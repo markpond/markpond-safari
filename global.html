@@ -1,0 +1,65 @@
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script>
+	safari.application.addEventListener("command", performCommand, false);
+	
+	function performCommand(event) {
+		if (event.command == "markpond-button") {
+			buttonSave();
+		} else if (event.command == "markpond-context") {
+			contextSave();
+		}
+	}
+
+	function buttonSave() {
+		
+		// Open the popup and shit
+
+		var url = getURL();
+
+		var newTab = safari.application.activeBrowserWindow.openTab();
+		newTab.url = "https://markpond.com/bookmarklets/normal?source=safari&url=" + encodeURIComponent(url);  
+
+	}
+
+	function contextSave() {
+		// Post shit to the /safari_context endpoint
+		
+		var endpoint = "https://markpond.com/bookmarklets/safari_context";
+		var url = getURL();
+		var title = getTitle();
+		var token = safari.extension.secureSettings.token;
+
+		$.ajax({
+			type: "POST",
+			url: endpoint,
+			data: {
+				url: url,
+				token: token,
+				title: title,
+				source: "Safari Extension"
+			},
+			cache: false,
+			complete: function(jqXHR, textStatus) {
+				switch (jqXHR.status) {
+					case 200:
+						alert("Saved Successfully");
+						break;
+					case 401:
+						alert("Your extension token is invalid. Please reset it on the resources page.");
+						break;
+					default:
+						alert("Something went wrong. Please try agian.");
+				}
+			}
+		});
+	}
+
+	function getURL() {
+		return safari.application.activeBrowserWindow.activeTab.url;
+	}
+	
+	function getTitle() {
+		return safari.application.activeBrowserWindow.activeTab.title;
+	}
+
+</script>
